@@ -1,49 +1,81 @@
 <!DOCTYPE html>
 
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>WebGL Example File</title>
+
+  <script id="vshader" type="x-shader/x-vertex">
+
+  attribute vec4 vPosition;
+  attribute vec4 vColor;
+  uniform float vPointSize;
+  uniform mat4 projMatrix;
+  uniform mat4 modelMatrix;
+  varying vec4 fColor;
+  void main() {
+    gl_Position = projMatrix * modelMatrix * vPosition;
+    gl_PointSize = vPointSize;
+    fColor = vColor;
+    }
+  </script>
+
+  <script id="fshader" type="x-shader/x-fragment">
+  precision mediump float;
+  varying vec4 fColor;
+  void main()
+  {
+    gl_FragColor = fColor;
+    }
+  </script>
+
+    <script src="lib/webgl-utils.js"></script>
+    <script src="lib/initShaders.js"></script>
+    <script src="lib/MV.js"></script>
+
+    <script src="proj1.js"></script>
+
+  </head>
+  <body>
+  <div id="page-wrapper">
+
+      <h1>Text File Reader</h1>
+      <div>
+          Select a text file:
+          <input type="file" id="fileInput"/>
+      </div>
+          <br/>
+          <input type="text" id="fileDisplayArea"/>
+  </div>
+  <script>
+  console.log(1);
+  window.onload = function() {
+      console.log(2);
+      var fileInput = document.getElementById('fileInput');
+      var fileDisplayArea = document.getElementById('fileDisplayArea');
+      console.log(3);
+      fileInput.addEventListener('change', function(e) {
+          var file = fileInput.files[0];
+          console.log(4);
+
+          var reader = new FileReader();
+          console.log(5);
+          reader.onload = function(e) {
+              fileDisplayArea.value = reader.result;
+              //console.log(reader.result);
 
 
-<body>
-<div id="page-wrapper">
+          }
+          console.log(6);
 
-    <h1>Text File Reader</h1>
-    <div>
-        Select a text file:
-        <input type="file" id="fileInput"/>
-    </div>
-        <br/>
-        <input type="text" id="fileDisplayArea"/>
-</div>
-<script>
-console.log(1);
-window.onload = function() {
-    console.log(2);
-    var fileInput = document.getElementById('fileInput');
-    var fileDisplayArea = document.getElementById('fileDisplayArea');
-    console.log(3);
-    fileInput.addEventListener('change', function(e) {
-        var file = fileInput.files[0];
-        console.log(4);
-
-        var reader = new FileReader();
-        console.log(5);
-        reader.onload = function(e) {
-            fileDisplayArea.value = reader.result;
-            console.log(reader.result);
-        }
-        console.log(6);
-
-        reader.readAsText(file);
+          reader.readAsText(file);
 
 
 
-    });
-}
+      });
+  }
 
+  </script>
+  </body>
 
-
-
-
-
-
-</script>
-</body>
+</html>
