@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!--Readiing .txt files https://www.experts-exchange.com/questions/29042839/Reading-dat-file.html-->
-<html>
+
+
 
 <body>
 <div id="page-wrapper">
@@ -14,28 +14,36 @@
         <input type="text" id="fileDisplayArea"/>
 </div>
 <script>
+console.log(1);
 window.onload = function() {
+    console.log(2);
     var fileInput = document.getElementById('fileInput');
     var fileDisplayArea = document.getElementById('fileDisplayArea');
-
+    console.log(3);
     fileInput.addEventListener('change', function(e) {
         var file = fileInput.files[0];
-        var textType = /text.*/;
+        console.log(4);
 
-        if (file.type.match(textType)) {
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                fileDisplayArea.value = reader.result;
-            }
-
-            reader.readAsText(file);
-        } else {
-            fileDisplayArea.innerText = "File not supported!"
+        var reader = new FileReader();
+        console.log(5);
+        reader.onload = function(e) {
+            fileDisplayArea.value = reader.result;
+            console.log(reader.result);
         }
+        console.log(6);
+
+        reader.readAsText(file);
+
+
+
     });
 }
 
+
+
+
+
+
+
 </script>
 </body>
-</html>
