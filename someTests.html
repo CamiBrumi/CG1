@@ -7,14 +7,38 @@
 </head>
 <body>
   <p id="par"></p>
-  <script>
-    function isNumeric(num){
-      return !isNaN(num);
-    }
 
-    var empty = "";
-    document.getElementById("par").innerHTML = isNumeric('***');
-  </script>
+  <canvas id="webgl" width="400" height="400" style="border: 1px solid black;">
+
+  </canvas>
+  <script>
+
+  var canvas  = document.getElementById("webgl");
+  canvas.addEventListener("mousedown", function(event) {
+    console.log(2 * event.clientX / canvas.width - 1);
+    console.log(2 * (canvas.height - event.clientY) / canvas.height - 1);
+    //if(draw === true){
+
+        //userPoints.push(vec4(2 * event.clientX / canvas.width - 1,
+        //    2 * (canvas.height - event.clientY) / canvas.height - 1), 0.0, 1.0);
+        //colors.push(vec4(0.0, 0.0, 0.0, 1.0)); // black
+    //}
+  }, false);
+
+  function getPosition(event)
+{
+  var x = event.x;
+  var y = event.y;
+
+  var canvas = document.getElementById("canvas");
+
+  x -= canvas.offsetLeft;
+  y -= canvas.offsetTop;
+
+  console.log("x:" + x + " y:" + y);
+}
+</script>
+
 
 
 </body>

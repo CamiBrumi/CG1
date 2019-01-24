@@ -9,13 +9,9 @@
 
   attribute vec4 vPosition;
   attribute vec4 vColor;
-  uniform float vPointSize;
-  uniform mat4 projMatrix;
-  uniform mat4 modelMatrix;
   varying vec4 fColor;
   void main() {
-    gl_Position = projMatrix * modelMatrix * vPosition;
-    gl_PointSize = vPointSize;
+    gl_Position = vPosition;
     fColor = vColor;
     }
   </script>
@@ -50,7 +46,7 @@
 
   <p id="parr"></p>
 
-  <canvas id="webgl" width="400" height="400">
+  <canvas id="webgl" width="400" height="400" style="border: 1px solid black;">
     Please use a browser that supports the "canvas" tag.
   </canvas>
   </body>

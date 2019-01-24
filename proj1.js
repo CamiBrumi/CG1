@@ -4,15 +4,17 @@
  *
  * @author Joshua Cuneo
  */
-
+var nr = 0;
 var gl;
 var program;
 
-var points;
-var colors;
+var colors =[];
 var theta = 0;
 var alpha = 0;
-var dataArray = [];
+var myArray = [];
+
+var userPoints= [];
+var drawMode = true;
 
 
 function isNumeric(num){
@@ -24,40 +26,24 @@ function readFromInput() {
 	var fileDisplayArea = document.getElementById('fileDisplayArea');
 	//console.log(3);
 	fileInput.addEventListener('change', function(e) {
-			var file = fileInput.files[0];
-			//console.log(4);
+       var file = fileInput.files[0];
 
-			var reader = new FileReader();
-			//console.log(5);
-			reader.onload = function(e) {
-					fileDisplayArea.value = reader.result;
-					var data = reader.result;
-					//console.log(reader.result);
-					var dataArrayProv = data.split(" ");
-					for(var i = 0; i < dataArrayProv.length; i++) {
-						console.log(i);
-
-						var elem = dataArrayProv[i];
-
-
-						if (isNumeric(elem) && elem !== "") {
-							dataArray.push(elem);
-							console.log(elem);
-
-						}
-					}
-					document.getElementById("parr").innerHTML = dataArray;
-
-
-
-			}
-			//console.log(6);
-
-			reader.readAsText(file);
-
-
-
-	});
+       var reader = new FileReader();
+       reader.onload = function(e) {
+           var data = reader.result.split(/\r\n?|\n/);
+           for(var i=0; i < data.length; i++){
+               if(data[i].length === 16){  //workaround for getting the x and y coord lines and ignoring others
+                   var floats = data[i].match(/[+-]?\d+(\.\d+)?/g).map(function(v) { return parseFloat(v); });
+                   var xval = floats[0];
+                   var yval = floats[1];
+                   userPoints.push(vec4(xval, yval, 0.0, 1.0));
+               }
+           }
+       };
+       reader.readAsText(file);
+       userPoints = [];
+			 //render(); //added not sure
+   });
 }
 
 //--------------------------------
@@ -97,80 +83,60 @@ function main()
 	/*** VERTEX DATA ***/
 	//Define the positions of our points
 	//Note how points are in a range from 0 to 1
-	points = [];
-	points.push(vec4(-0.5, -0.5, 0.0, 1.0));
-	points.push(vec4(0.5, -0.5, 0.0, 1.0));
-	points.push(vec4(0.0, 0.5, 0.0, 1.0));
 
 
 	//Create the buffer object
 	var vBuffer = gl.createBuffer();
-
-	//Bind the buffer object to a target
-	//The target tells WebGL what type of data the buffer object contains,
-	//allowing it to deal with the contents correctly
-	//gl.ARRAY_BUFFER - specifies that the buffer object contains vertex data
 	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
-
-	//Allocate storage and write data to the buffer
-	//Write the data specified by the second parameter into the buffer object
-	//bound to the first parameter
-	//We use flatten because the data must be a single array of ints, uints, or floats (float32 or float64)
-	//This is a typed array, and we can't use push() or pop() with it
-	//
-	//The last parameter specifies a hint about how the program is going to use the data
-	//stored in the buffer object. This hint helps WebGL optimize performance but will not stop your
-	//program from working if you get it wrong.
-	//STATIC_DRAW - buffer object data will be specified once and used many times to draw shapes
-	//DYNAMIC_DRAW - buffer object data will be specified repeatedly and used many times to draw shapes
-	gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
-
-	//Get the location of the shader's vPosition attribute in the GPU's memory
-	var vPosition = gl.getAttribLocation(program, "vPosition");
-
-	//Specifies how shader should pull the data
-	//A hidden part of gl.vertexAttribPointer is that it binds the current ARRAY_BUFFER to the attribute.
-	//In other words now this attribute is bound to vColor. That means we're free to bind something else
-	//to the ARRAY_BUFFER bind point. The attribute will continue to use vPosition.
-	gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-
-	//Turns the attribute on
-	gl.enableVertexAttribArray(vPosition);
-
-	//Specify the vertex size
-	var offsetLoc = gl.getUniformLocation(program, "vPointSize");
-	gl.uniform1f(offsetLoc, 10.0);
-
-	/*** COLOR DATA ***/
-	colors = [];
-	colors.push(vec4(1.0, 0.0, 0.0, 1.0));
-	colors.push(vec4(0.0, 1.0, 0.0, 1.0));
-	colors.push(vec4(0.0, 0.0, 1.0, 1.0));
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(userPoints), gl.STATIC_DRAW);
 
 	var cBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
+
+	//Get the location of the shader's vPosition attribute in the GPU's memory
+	var vPosition = gl.getAttribLocation(program, "vPosition");
+	gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(vPosition);
+
+
+
 
 	var vColor = gl.getAttribLocation(program, "vColor");
 	gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(vColor);
 
 	//This is how we handle extents
-	var thisProj = ortho(-1, 1, -1, 1, -1, 1);
+	//var thisProj = ortho(-1, 1, -1, 1, -1, 1);
 
-	var projMatrix = gl.getUniformLocation(program, 'projMatrix');
-	gl.uniformMatrix4fv(projMatrix, false, flatten(thisProj));
 
 
 	// Set clear color
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.clearColor(1.0, 1.0, 1.0, 1.0);
 
 	//Necessary for animation
-	render();
 
+
+	canvas.addEventListener("mousedown", function(event) {
+    //console.log(2 * event.clientX / canvas.width - 1);
+    //console.log(2 * (canvas.height - event.clientY) / canvas.height - 1);
+    //if(draw === true){
+
+        userPoints.push(vec4(2 * event.clientX / canvas.width - 1,
+            2 * (canvas.height - event.clientY) / canvas.height - 1), 0.0, 1.0);
+						console.log(userPoints.length);
+        //colors.push(vec4(0.0, 0.0, 0.0, 1.0)); // black
+    //}
+  });
+
+  render();
 }
 
 function render() {
+
+	console.log(nr++);
+
+	/*
 	var rotMatrix = rotateX(theta);
 	var translateMatrix = translate(alpha, 0, 0);
 	var ctMatrix = mult(translateMatrix, rotMatrix);
@@ -184,7 +150,15 @@ function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
 
 	//gl.drawArrays(gl.POINTS, 0, points.length);
-	gl.drawArrays(gl.TRIANGLES, 0, points.length);
+	 */
+
+
+
+		 gl.clear(gl.COLOR_BUFFER_BIT);
+		 gl.bufferData(gl.ARRAY_BUFFER, flatten(userPoints), gl.STATIC_DRAW);
+		 gl.drawArrays(gl.LINE_STRIP, 0, userPoints.length);
+
+
 
 	requestAnimationFrame(render);
 }
