@@ -1,7 +1,7 @@
 /*
  * Some comments quoted from WebGL Programming Guide
  * by Matsuda and Lea, 1st edition.
- * 
+ *
  * @author Joshua Cuneo
  */
 
@@ -12,21 +12,69 @@ var points;
 var colors;
 var theta = 0;
 var alpha = 0;
+var dataArray = [];
 
 
-function main() 
+function isNumeric(num){
+	return !isNaN(num);
+}
+//--------------------------------
+function readFromInput() {
+	var fileInput = document.getElementById('fileInput');
+	var fileDisplayArea = document.getElementById('fileDisplayArea');
+	//console.log(3);
+	fileInput.addEventListener('change', function(e) {
+			var file = fileInput.files[0];
+			//console.log(4);
+
+			var reader = new FileReader();
+			//console.log(5);
+			reader.onload = function(e) {
+					fileDisplayArea.value = reader.result;
+					var data = reader.result;
+					//console.log(reader.result);
+					var dataArrayProv = data.split(" ");
+					for(var i = 0; i < dataArrayProv.length; i++) {
+						console.log(i);
+
+						var elem = dataArrayProv[i];
+
+
+						if (isNumeric(elem) && elem !== "") {
+							dataArray.push(elem);
+							console.log(elem);
+
+						}
+					}
+					document.getElementById("parr").innerHTML = dataArray;
+
+
+
+			}
+			//console.log(6);
+
+			reader.readAsText(file);
+
+
+
+	});
+}
+
+//--------------------------------
+function main()
 {
+	window.onload = readFromInput();
 	// Retrieve <canvas> element
 	var canvas = document.getElementById('webgl');
 
 	// Get the rendering context for WebGL
 	gl = WebGLUtils.setupWebGL(canvas, undefined);
-	if (!gl) 
+	if (!gl)
 	{
 		console.log('Failed to get the rendering context for WebGL');
 		return;
 	}
-	
+
 	// Initialize shaders
 	// This function call will create a shader, upload the GLSL source, and compile the shader
 	program = initShaders(gl, "vshader", "fshader");
@@ -41,11 +89,11 @@ function main()
 	//canvas is the window, and viewport is the viewing area within that window
 		//This tells WebGL the -1 +1 clip space maps to 0 <-> gl.canvas.width for x and 0 <-> gl.canvas.height for y
 	gl.viewport( 0, 0, canvas.width, canvas.height );
-	
+
 	/**********************************
 	* Points, Lines, and Fill
 	**********************************/
-	
+
 	/*** VERTEX DATA ***/
 	//Define the positions of our points
 	//Note how points are in a range from 0 to 1
@@ -53,13 +101,13 @@ function main()
 	points.push(vec4(-0.5, -0.5, 0.0, 1.0));
 	points.push(vec4(0.5, -0.5, 0.0, 1.0));
 	points.push(vec4(0.0, 0.5, 0.0, 1.0));
-	
+
 
 	//Create the buffer object
 	var vBuffer = gl.createBuffer();
 
 	//Bind the buffer object to a target
-	//The target tells WebGL what type of data the buffer object contains, 
+	//The target tells WebGL what type of data the buffer object contains,
 	//allowing it to deal with the contents correctly
 	//gl.ARRAY_BUFFER - specifies that the buffer object contains vertex data
 	gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
@@ -140,4 +188,3 @@ function render() {
 
 	requestAnimationFrame(render);
 }
-

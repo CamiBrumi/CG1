@@ -36,7 +36,7 @@
     <script src="proj1.js"></script>
 
   </head>
-  <body>
+  <body onload="main()">
   <div id="page-wrapper">
 
       <h1>Text File Reader</h1>
@@ -47,35 +47,12 @@
           <br/>
           <input type="text" id="fileDisplayArea"/>
   </div>
-  <script>
-  console.log(1);
-  window.onload = function() {
-      console.log(2);
-      var fileInput = document.getElementById('fileInput');
-      var fileDisplayArea = document.getElementById('fileDisplayArea');
-      console.log(3);
-      fileInput.addEventListener('change', function(e) {
-          var file = fileInput.files[0];
-          console.log(4);
 
-          var reader = new FileReader();
-          console.log(5);
-          reader.onload = function(e) {
-              fileDisplayArea.value = reader.result;
-              //console.log(reader.result);
+  <p id="parr"></p>
 
-
-          }
-          console.log(6);
-
-          reader.readAsText(file);
-
-
-
-      });
-  }
-
-  </script>
+  <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports the "canvas" tag.
+  </canvas>
   </body>
 
 </html>
