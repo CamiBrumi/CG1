@@ -17,12 +17,8 @@ var userPoints = [];
 var numberPointsEachPolyline = [];
 var drawMode = true;
 const NR_POLYLINES_LINE = 3;
+var projMat = ortho(0, 1, 0, 1, -1, 1);
 
-function isNumeric(num) {
-    return !isNaN(num);
-}
-
-//--------------------------------
 
 
 
@@ -92,6 +88,9 @@ function drawPolylineFromInput() {
         //console.log(numberPointsEachPolyline[i] + "must be equal to " + partOfUserPoints.length + " and equal to " + partOfColors.length);
         gl.drawArrays(gl.LINE_STRIP, 0, numberPointsEachPolyline[i]);
         startPos = startPos + numberPointsEachPolyline[i];
+
+        var projMatrix = gl.getUniformLocation(program, "projMat");
+        gl.uniformMatrix4fv(projMatrix, false, flatten(projMat));
 
         //console.log(i);
     }

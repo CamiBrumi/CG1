@@ -5,13 +5,15 @@
     <meta charset="utf-8" />
     <title>WebGL Example File</title>
 
+      <!-- -->
   <script id="vshader" type="x-shader/x-vertex">
 
   attribute vec4 vPosition;
   attribute vec4 vColor;
-  varying vec4 fColor;
+  varying vec4 fColor;  // change to uniform
+  uniform mat4 projMat;
   void main() {
-    gl_Position = vPosition;
+    gl_Position = projMat * vPosition;
     fColor = vColor;
     }
   </script>
