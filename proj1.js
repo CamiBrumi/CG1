@@ -23,59 +23,11 @@ function isNumeric(num) {
 }
 
 //--------------------------------
-function readFromInput() {
-    var fileInput = document.getElementById('fileInput');
-    var fileDisplayArea = document.getElementById('fileDisplayArea');
-    //console.log(3);
-    fileInput.addEventListener('change', function (e) {
-        var file = fileInput.files[0];
 
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            var data = reader.result.split(/\r\n?|\n/);
-            var nrOfPolylines = parseInt(data[NR_POLYLINES_LINE]);
-            console.log(data);
-            //we create a matrix, every row (array) of which we will convert to vec4 using Vec4(a[0], a[1], a[2], a[3]);, where a is the matrix
-            //var matrix = [];
-            /*for (var i = 0; i < nrOfPolylines; i++) {
-                userPoints[i] = [];
-            }*/
-            var startPoly = NR_POLYLINES_LINE + 1; //line where the number of points of each polyline is indicated
-            for (var i = 0; i < nrOfPolylines; i++) { // i is the polyline we are looking at
-
-                const nrPointsInPolyline = parseInt(data[startPoly]);
-                console.log(nrPointsInPolyline);
-                numberPointsEachPolyline.push(nrPointsInPolyline); // this arrays keeps track of the number of point of each polyline, so we can draw them separatelly
-                for (var j = 0; j < nrPointsInPolyline; j++) {
-                    // now we process the data
-                    var floats = data[startPoly+ j + 1].match(/[+-]?\d+(\.\d+)?/g).map(function (v) { //startPoly+ j + 1 IS THE POSITION OF THE jTH point of the ith point
-                        return parseFloat(v);
-                    });
-                    var xval = floats[0];
-                    var yval = floats[1];
-                    console.log(xval + " " + yval);
-                    userPoints.push(vec4(xval, yval, 0.0, 1.0));
-                    //userPoints[i].push(data[startPoly+j + 1]); // since we start with i=0, we want to retrieve the data stored in the [NR_POLYLINES_LINE+j]th position of the matrix, since one position is occupied by the number of points in that polyline
-                }
-                startPoly = startPoly + nrPointsInPolyline + 1; //  because of the first time we defined this var
-
-                /*if (data[i].length === 16) {  //workaround for getting the x and y coord lines and ignoring others
-
-                }*/
-            }
-            console.log("userpoints length = " + userPoints.length);
-            drawPolylineFromInput();
-        };
-
-        reader.readAsText(file);
-
-        //userPoints = [];
-        //render(); //added not sure
-    });
-}
 
 
 function drawPolylineFromInput() {
+    //console.log("We are in the drawPolyLineFromInput");
     var canvas = document.getElementById('webgl');
 
     // Get the rendering context for WebGL
@@ -108,31 +60,44 @@ function drawPolylineFromInput() {
         //Define the positions of our points
         //Note how points are in a range from 0 to 1
     //Create the buffer object
-    var vBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+
+
     var startPos = 0;
     for (var i = 0; i < numberPointsEachPolyline.length; i++) {
-        gl.bufferData(gl.ARRAY_BUFFER, flatten(userPoints.slice(startPos, numberPointsEachPolyline[i])), gl.STATIC_DRAW); //slice(a, b) is a inclusive, b exclusive
+        //console.log("start pos: " + startPos + ", until " + numberPointsEachPolyline[i]);
+        var vBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+        var partOfUserPoints = userPoints.slice(startPos, startPos + numberPointsEachPolyline[i]);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(partOfUserPoints), gl.STATIC_DRAW); //slice(a, b) is a inclusive, b exclusive
+
+
+        var vPosition = gl.getAttribLocation(program, "vPosition");
+        gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(vPosition);
+
+        var partOfColors = colors.slice(startPos, startPos + numberPointsEachPolyline[i]);
+
+        var cBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(partOfColors), gl.STATIC_DRAW);
+
+        var vColor = gl.getAttribLocation(program, "vColor");
+        gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(vColor);
+
+
         //don't forget the draw stuff
+        //Get the location of the shader's vPosition attribute in the GPU's memory
+
+        //console.log(numberPointsEachPolyline[i] + "must be equal to " + partOfUserPoints.length + " and equal to " + partOfColors.length);
         gl.drawArrays(gl.LINE_STRIP, 0, numberPointsEachPolyline[i]);
         startPos = startPos + numberPointsEachPolyline[i];
-        console.log(i);
+
+        //console.log(i);
     }
 
 
-    var cBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, flatten(colors), gl.STATIC_DRAW);
 
-    //Get the location of the shader's vPosition attribute in the GPU's memory
-    var vPosition = gl.getAttribLocation(program, "vPosition");
-    gl.vertexAttribPointer(vPosition, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vPosition);
-
-
-    var vColor = gl.getAttribLocation(program, "vColor");
-    gl.vertexAttribPointer(vColor, 4, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(vColor);
 
     //This is how we handle extents
     //var thisProj = ortho(-1, 1, -1, 1, -1, 1);
@@ -144,10 +109,56 @@ function drawPolylineFromInput() {
 }
 //--------------------------------
 function main() {
-    readFromInput();
-    console.log("hello");
-    //console.log(userPoints.length);
-    // Retrieve <canvas> element
+    var fileInput = document.getElementById('fileInput');
+    //var fileDisplayArea = document.getElementById('fileDisplayArea');
+    //console.log(3);
+    fileInput.addEventListener('change', function (e) {
+        var file = fileInput.files[0];
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var data = reader.result.split(/\r\n?|\n/);
+            var nrOfPolylines = parseInt(data[NR_POLYLINES_LINE]);
+
+            //console.log(data);
+
+            var startPoly = NR_POLYLINES_LINE + 1; //line where the number of points of each polyline is indicated
+
+            for (var i = 0; i < nrOfPolylines; i++) { // i is the polyline we are looking at
+
+                const nrPointsInPolyline = parseInt(data[startPoly]);
+                //console.log(nrPointsInPolyline);
+                numberPointsEachPolyline.push(nrPointsInPolyline); // this arrays keeps track of the number of point of each polyline, so we can draw them separatelly
+                for (var j = 0; j < nrPointsInPolyline; j++) {
+                    colors.push(vec4(1.0, 0.0, 0.0, 1.0));
+                    // now we process the data
+                    var floats = data[startPoly+ j + 1].match(/[+-]?\d+(\.\d+)?/g).map(function (v) { //startPoly+ j + 1 IS THE POSITION OF THE jTH point of the ith point
+                        return parseFloat(v);
+                    });
+                    var xval = floats[0];
+                    var yval = floats[1];
+                    //console.log(xval + " " + yval);
+                    userPoints.push(vec4(xval, yval, 0.0, 1.0));
+                    //console.log(vec4(xval, yval, 0.0, 1.0));
+                    //userPoints[i].push(data[startPoly+j + 1]); // since we start with i=0, we want to retrieve the data stored in the [NR_POLYLINES_LINE+j]th position of the matrix, since one position is occupied by the number of points in that polyline
+                }
+
+                startPoly = startPoly + nrPointsInPolyline + 1; //  because of the first time we defined this var
+
+            }
+            //console.log("colors length = " + colors.length);
+            //console.log("userpoints length = " + userPoints.length);
+
+            drawPolylineFromInput();
+
+        };
+
+        reader.readAsText(file);
+
+        //userPoints = [];
+
+        //render(); //added not sure
+    });
 
 
 
@@ -156,7 +167,7 @@ function main() {
     //Necessary for animation
 
 
-    canvas.addEventListener("mousedown", function (event) {
+    /*canvas.addEventListener("mousedown", function (event) {
         //console.log(2 * event.clientX / canvas.width - 1);
         //console.log(2 * (canvas.height - event.clientY) / canvas.height - 1);
         //if(draw === true){
@@ -166,7 +177,7 @@ function main() {
         console.log(userPoints.length);
         //colors.push(vec4(0.0, 0.0, 0.0, 1.0)); // black
         //}
-    });
+    });*/
 
     //render();
 }
