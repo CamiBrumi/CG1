@@ -18,34 +18,20 @@ var numberPointsEachPolyline = [];
 var drawMode = true;
 const NR_POLYLINES_LINE = 3;
 var projMat = ortho(0, 1, 0, 1, -1, 1);
+var inputDiv;
+var canvas;
+var header;
 
 
+
+function fileMode(){
+
+}
 
 
 function drawPolylineFromInput() {
     //console.log("We are in the drawPolyLineFromInput");
-    var canvas = document.getElementById('webgl');
 
-    // Get the rendering context for WebGL
-    gl = WebGLUtils.setupWebGL(canvas, undefined);
-    if (!gl) {
-        console.log('Failed to get the rendering context for WebGL');
-        return;
-    }
-
-    // Initialize shaders
-    // This function call will create a shader, upload the GLSL source, and compile the shader
-    program = initShaders(gl, "vshader", "fshader");
-
-    // We tell WebGL which shader program to execute.
-    gl.useProgram(program);
-
-    //Set up the viewport
-    //x, y - specify the lower-left corner of the viewport rectangle (in pixels)
-    //In WebGL, x and y are specified in the <canvas> coordinate system
-    //width, height - specify the width and height of the viewport (in pixels)
-    //canvas is the window, and viewport is the viewing area within that window
-    //This tells WebGL the -1 +1 clip space maps to 0 <-> gl.canvas.width for x and 0 <-> gl.canvas.height for y
     gl.viewport(0, 0, canvas.width, canvas.height);
 
     /**********************************
@@ -108,7 +94,50 @@ function drawPolylineFromInput() {
 }
 //--------------------------------
 function main() {
+    canvas = document.getElementById('webgl');
+    header = document.getElementById('header');
+
+    // Get the rendering context for WebGL
+    gl = WebGLUtils.setupWebGL(canvas, undefined);
+    if (!gl) {
+        console.log('Failed to get the rendering context for WebGL');
+        return;
+    }
+
+    // Initialize shaders
+    // This function call will create a shader, upload the GLSL source, and compile the shader
+    program = initShaders(gl, "vshader", "fshader");
+
+    // We tell WebGL which shader program to execute.
+    gl.useProgram(program);
+
+
+    window.onkeypress = function(event) {
+        var key = event.key;
+        switch(key) {
+            case 'f':
+                gl.clearColor(1.0, 1.0, 1.0, 1.0); // we can avoid this if we want to use the same background
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                inputDiv.style.visibility = "visible";
+                header.innerHTML = "File Mode";
+                fileMode();
+
+                break;
+            case 'd':
+                gl.clearColor(1.0, 1.0, 1.0, 1.0); // we can avoid this if we want to use the same background
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                inputDiv.style.visibility = "hidden";
+                header.innerHTML = "Draw Mode";
+
+
+                break;
+        }
+    }
+
+
+
     var fileInput = document.getElementById('fileInput');
+    inputDiv = document.getElementById('inputDiv')
     //var fileDisplayArea = document.getElementById('fileDisplayArea');
     //console.log(3);
     fileInput.addEventListener('change', function (e) {
