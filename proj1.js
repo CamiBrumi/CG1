@@ -48,8 +48,9 @@ function drawPolylineFromInput() {
     //Note how points are in a range from 0 to 1
     //Create the buffer object
 
-    console.log(userPoints);
+    //console.log(userPoints);
     colors = [];
+
     for(var i=0; i<userPoints.length;i++){
         colors.push(colorArray[colorIdx]);
 
@@ -152,6 +153,8 @@ function main() {
                 colorIdx= (colorIdx + 1)%4;
                 if (!draw) {
                     drawPolylineFromInput();
+                } else {
+                    render();
                 }
         }
     }
@@ -302,7 +305,8 @@ function getMousePos(canvas, evt) {
 }*/
 
 function render() {
-
+    console.log("RENDEEEER");
+    console.log(colors.length);
     //
     //  Load shaders and initialize attribute buffers
     //
@@ -329,6 +333,7 @@ function render() {
     // gl.uniformMatrix4fv(projMatrix, false, flatten(projMat));
 
     colors = [];
+    console.log(colors.length);
     for(var i=0; i<userPoints.length;i++){
         colors.push(colorArray[colorIdx]);
 
